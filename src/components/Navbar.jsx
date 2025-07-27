@@ -12,7 +12,7 @@ const Navbar = () => {
   return (
     <nav className="bg-green-400 sticky top-0 z-50">
       <div className="flex items-center justify-between px-6 py-4">
-        <div className="text-xl font-bold text-white">🌿 EcoApp - "Be a waste warrior—put trash in the right bin!" 🌎✨
+        <div className="text-xl font-bold text-white">🌿 EcoChamp - "Be a waste warrior—put trash in the right bin!" 🌎✨
 
 </div>
 

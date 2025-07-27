@@ -10,7 +10,7 @@ export default function Game(){
         {name:'bulb',type:'hazardous',img:'/bulb-broken.jpg'},
         {name:'chips',type:'dry',img:'/chips.jpg'},
         {name:'expiredMedicine',type:'hazardous',img:'/expiredMedicine.jpg'},
-        {name:'left-over',type:'wet',img:'/left-over.jpg'},
+        {name:'left-over-food',type:'wet',img:'/left-over.jpg'},
         {name:'newspaper',type:'dry',img:'/newspaper.jpg'},
         {name:'vegetable_scraps',type:'wet',img:'/vegetable_scraps.png'},
         {name:'chocolate_wrapper',type:'dry',img:'/chocolate.png'},
@@ -25,6 +25,7 @@ export default function Game(){
     const [score, setScore] = useState(0);
     const [binMood,setBinMood]=useState({type:null,mood:null});
     const [wrongOnce,setWrongOnce]=useState(false);
+    const [fading,setFading]=useState(false);
     const [feedback,setFeedback]=useState("");
    const handleDragStart=(e,item)=>{
        e.dataTransfer.setData('item',JSON.stringify(item));
@@ -36,8 +37,10 @@ export default function Game(){
          if(!wrongOnce){
              setScore((prev)=>prev+1);
          }
-         
-         setItems((prevItems) => prevItems.slice(1));
+         setTimeout(()=>{
+             setItems((prevItems) => prevItems.slice(1));
+         },1000)
+         setFading(true);
          setFeedback("✅ Correct! Great Job!");
          setBinMood({type:binType,mood:'happy'})
          setWrongOnce(false);
@@ -51,8 +54,10 @@ export default function Game(){
        setTimeout(() => {
             setFeedback('');
             setBinMood({type:null,mood:null})
+           // setItems((prevItems) => prevItems.slice(1));
+            setFading(false);
        }
-       , 2000);
+       , 1000);
        setCurrentIndex((prev)=>prev+1);
    }
    const allowDrop=(e)=>e.preventDefault();
@@ -67,11 +72,13 @@ export default function Game(){
           <img
             src={currentItem.img}
             alt={currentItem.name}
-            className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain animate-bounce cursor-move"
+            className={`w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain cursor-move transition-opacity duration-500 ${
+              fading ? "opacity-0" : "animate-bounce"
+            }`}
             draggable
             onDragStart={(e) => handleDragStart(e, currentItem)}
           />
-          <p className="mt-2 font-semibold">{currentItem.name}</p>
+          <p className={`mt-2 font-semibold transition-opacity duration-500 ${fading ? "opacity-0" : ""}`}>{currentItem.name}</p>
         </div>
       ) : (
         // <h2 className="text-xl font-bold text-green-700">🎉 Game Over! Your Score: {score}</h2>
