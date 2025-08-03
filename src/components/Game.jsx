@@ -347,6 +347,7 @@ const handleTouchEnd = (e) => {
       {items.length==0 && (
         <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white bg-opacity-80 backdrop-blur-lg p-8 rounded-3xl shadow-2xl text-center border-4 border-green-300">
+                 <img src="ecochamps.jpg" alt="Congratulations" className="mx-auto mb-4 w-32 h-32 object-contain"/>
                 <h2>🎉 Game Over!</h2>
                 <p>Your eco score : <span className="text-green-600">{score}</span></p>
                 <p>Great job ! saving the planet 🌍 </p>
