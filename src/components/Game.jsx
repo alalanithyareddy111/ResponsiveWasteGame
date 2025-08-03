@@ -1,5 +1,5 @@
 import { items } from "../data";
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 import ItemCard from "./ItemCard";
 export default function Game(){
     const [items,setItems]=useState([
@@ -27,6 +27,14 @@ export default function Game(){
     const [wrongOnce,setWrongOnce]=useState(false);
     const [fading,setFading]=useState(false);
     const [feedback,setFeedback]=useState("");
+
+    const [touchedItem, setTouchedItem] = useState(null);
+
+  
+
+
+
+
    const handleDragStart=(e,item)=>{
        e.dataTransfer.setData('item',JSON.stringify(item));
    }
@@ -60,6 +68,94 @@ export default function Game(){
        , 1000);
        setCurrentIndex((prev)=>prev+1);
    }
+
+
+   const handleDropTouch = (touchedItem, binType) => {
+  if (!touchedItem) return;
+
+  if (touchedItem.type === binType) {
+    if (!wrongOnce) {
+      setScore((prev) => prev + 1);
+    }
+    setTimeout(() => {
+      setItems((prevItems) => prevItems.slice(1));
+    }, 1000);
+    setFading(true);
+    setFeedback("✅ Correct! Great Job!");
+    setBinMood({ type: binType, mood: "happy" });
+    setWrongOnce(false);
+  } else {
+    setFeedback(`❌ Oops! That's ${touchedItem.type} waste.`);
+    setBinMood({ type: binType, mood: "sad" });
+    setWrongOnce(true);
+  }
+
+  setTimeout(() => {
+    setFeedback("");
+    setBinMood({ type: null, mood: null });
+    setFading(false);
+  }, 1000);
+
+  setCurrentIndex((prev) => prev + 1);
+};
+
+
+const handleTouchStart = (e, item) => {
+  const touch = e.touches[0];
+  const el = e.currentTarget;
+  const rect = el.getBoundingClientRect();
+
+  const offsetX = touch.clientX - rect.left;
+  const offsetY = touch.clientY - rect.top;
+
+  el.dataset.offsetX = offsetX;
+  el.dataset.offsetY = offsetY;
+
+  setTouchedItem(item);
+};
+
+const handleTouchMove = (e) => {
+  const touch = e.touches[0];
+  const el = e.currentTarget;
+
+  el.style.position = 'absolute';
+  el.style.zIndex = 9999;
+
+  const offsetX = Number(el.dataset.offsetX);
+  const offsetY = Number(el.dataset.offsetY);
+
+  // el.style.left = `${touch.clientX - offsetX}px`;
+  // el.style.top = `${touch.clientY - offsetY}px`;
+  el.style.transform = `translate(${touch.clientX - offsetX}px, ${touch.clientY - offsetY}px)`;
+
+};
+
+const handleTouchEnd = (e) => {
+  const touch = e.changedTouches[0];
+  const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+
+  if (dropTarget) {
+    const binElement = dropTarget.closest("[data-bin-type]");
+    const binType = binElement?.dataset?.binType;
+
+    if (binType && touchedItem) {
+      handleDropTouch(touchedItem, binType);
+    }
+  }
+
+  const el = e.currentTarget;
+  el.style.position = "";
+  el.style.left = "";
+  el.style.top = "";
+  el.style.zIndex = "";
+
+  setTouchedItem(null);
+};
+
+
+
+
+
    const allowDrop=(e)=>e.preventDefault();
 
     const currentItem=items[0];
@@ -69,14 +165,72 @@ export default function Game(){
             
               {currentItem ? (
         <div className={`flex flex-col items-center mb-10 transition-opacity duration-1000 ${fading ? "opacity-0" : "opacity-100"}`}>
-          <img
+          {/* <img
             src={currentItem.img}
             alt={currentItem.name}
             className={`w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain cursor-move animate-bounce
             }`}
             draggable
             onDragStart={(e) => handleDragStart(e, currentItem)}
-          />
+          /> */}
+{/* 
+            <img
+            src={currentItem.img}
+            alt={currentItem.name}
+      className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain cursor-move animate-bounce touch-none"
+      draggable
+      onDragStart={(e) => handleDragStart(e, currentItem)}
+          
+
+         onTouchStart={(e) => {
+  //  e.preventDefault();
+    const touch = e.touches[0];
+    setTouchedItem(currentItem);
+    setTouchPosition({ x: touch.clientX, y: touch.clientY });
+  }}
+  // onTouchMove={(e) => {
+  //   e.preventDefault();
+  //   const touch = e.touches[0];
+  //   setTouchPosition({ x: touch.clientX, y: touch.clientY });
+  // }}
+  onTouchEnd={(e) => {
+   // e.preventDefault();
+    // Add logic to check if it intersects a bin
+    setTouchedItem(null);
+    setTouchPosition(null);
+  }}
+  style={{
+    position: touchPosition && touchedItem === currentItem ? 'fixed' : 'static',
+    left: touchPosition?.x,
+    top: touchPosition?.y,
+    transform: 'translate(-50%, -50%)',
+    zIndex: 1000,
+  }}
+
+       /> */}
+
+
+
+       <div className="relative h-36 w-36 flex items-center justify-center">
+  <img
+    src={currentItem.img}
+    alt={currentItem.name}
+    className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain cursor-move animate-bounce touch-none"
+    draggable
+    onDragStart={(e) => handleDragStart(e, currentItem)}
+     onTouchStart={(e) => handleTouchStart(e, currentItem)}
+  onTouchMove={(e) => handleTouchMove(e)}
+  onTouchEnd={(e) => handleTouchEnd(e)}
+  
+
+    
+  />
+</div>
+
+
+
+
+
           <p className={`mt-2 font-semibold transition-opacity duration-500 `}>{currentItem.name}</p>
         </div>
       ) : (
@@ -139,7 +293,8 @@ export default function Game(){
       } */} 
 
        {items.length > 0 && (
-  <div className="flex flex-wrap items-center justify-center gap-10 mt-6">
+  // <div className="flex flex-wrap items-center justify-center gap-10 mt-6">
+    <div className="flex flex-wrap justify-center items-center gap-4 mt-8 relative">
     {bins.map((bin, index) => {
       // 🛠️ Move logic here, before the return
       let binImage = bin.img;
@@ -154,8 +309,11 @@ export default function Game(){
       return (
         <div
           key={index}
+          data-bin-type={bin.type}
           onDrop={(e) => handleDrop(e, bin.type)}
           onDragOver={allowDrop}
+   
+
           className={`flex flex-col items-center border-4 border-dashed rounded-2xl p-4 shadow-lg hover:scale-105 transition-transform bg-white 
               ${binMood.type===bin.type  ?   binMood.mood==="happy" ? "animate-rotate-pop" : binMood.mood==="sad" ? "animate-shake":"":""}
             
